@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Deteksi Kerumunan</title>
+    <link rel="stylesheet" href="https://code.jquery.com/jquery-3.6.0.min.js">
+</head>
+<body>
+    <header class="header">
+        <button class="menu-btn">☰</button>
+        <h1>Sistem Deteksi Kerumunan</h1>
+        <img src="https://i.ibb.co/pxX3fB6/RIVALDI-removebg.png" alt="RIVALDI" class="gambar-kecil">
+    </header>
+    
+    <nav class="sidebar">
+        <a href="{{ url_for('index') }}" class="active">
+            <i>🏠</i> Beranda
+        </a>
+        <a href="{{ url_for('dashboard') }}">
+            <i>📊</i> Dashboard
+        </a>
+        <a href="{{ url_for('laporan') }}">
+            <i>📝</i> Laporan
+        </a>
+    </nav>
+
+    <main>
+        <section class="dashboard">
+            <h2>Informasi Deteksi</h2>
+            <div class="data-container">
+                <div class="card">
+                    <h3>Jumlah Orang</h3>
+                    <p id="peopleCount">0</p>
+                </div>
+                <div class="card">
+                    <h3>Jumlah Mobil</h3>
+                    <p id="carCount">0</p>
+                </div>
+                <div class="card">
+                    <h3>Jumlah Motor</h3>
+                    <p id="motorCount">0</p>
+                </div>
+                <div class="card">
+                    <h3>Waktu</h3>
+                    <p id="timestamp">00:00:00</p>
+                </div>
+                <div class="card">
+                    <h3>Tingkat Keramaian</h3>
+                    <p id="crowdLevel">normal</p>
+                </div>
+            </div>
+        </section>
+        <img src="{{ url_for('video_feed') }}" id="videoFeed" alt="Video Feed">
+    </main>
+
+    <footer>
+        © 2024 RIVALDI Sistem Deteksi Kerumunan
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Toggle Sidebar
+        document.querySelector('.menu-btn').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.querySelector('.sidebar');
+                const menuBtn = document.querySelector('.menu-btn');
+                if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+
+        $(document).ready(function() {
+            function updateDashboard() {
+                $.ajax({
+                    url: "/data",
+                    method: "GET",
+                    success: function(data) {
+                        $('#peopleCount').text(data.people);
+                        $('#carCount').text(data.cars);
+                        $('#motorCount').text(data.motorcycles);
+                        $('#crowdLevel').text(data.crowd_level);
+
+                        var now = new Date();
+                        var formattedTime = now.toLocaleTimeString();
+                        $('#timestamp').text(formattedTime);
+                    },
+                    error: function(err) {
+                        console.error("Gagal mendapatkan data", err);
+                    }
+                });
+            }
+            setInterval(updateDashboard, 1000);
+        });
+    </script>
+
+    <style>
+        :root {
+            --primary: #4834d4;
+            --secondary: #686de0;
+            --accent: #30336b;
+            --light: #f5f6fa;
+            --text: #2d3436;
+            --gradient: linear-gradient(135deg, #4834d4 0%, #686de0 100%);
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(72, 52, 212, 0.98);
+            color: white;
+            padding: 1rem 2rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 30px rgba(72, 52, 212, 0.3);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            width: 250px;
+            position: fixed;
+            height: 100vh;
+            top: 0;
+            padding-top: 80px;
+            transition: 0.4s ease;
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar a {
+            color: var(--text);
+            text-decoration: none;
+            padding: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            margin: 0.3rem;
+            border-radius: 12px;
+        }
+
+        .sidebar a.active,
+        .sidebar a:hover {
+            background: var(--gradient);
+            color: white;
+            border-left: 4px solid white;
+            box-shadow: 0 5px 15px rgba(72, 52, 212, 0.3);
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            margin-left: 250px;
+            margin-top: 80px;
+        }
+
+        .data-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .card {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            width: 180px;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        #videoFeed {
+            width: 80%;
+            max-width: 600px;
+            margin: 20px auto;
+            display: block;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        footer {
+            background: var(--accent);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: auto;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            main {
+                margin-left: 0;
+                padding-top: 100px;
+            }
+        }
+    </style>
+</body>
+</html>

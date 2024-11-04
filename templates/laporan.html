@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan - Sistem Deteksi Kerumunan</title>
+
+    
+</head>    
+<body>
+    <div class="container">
+        <header>
+            <h1>Laporan</h1>
+            <nav class="navbar">
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Beranda</a></li>
+                    <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                </ul>   
+            </nav>
+        </header>
+        <button class="toggle-sidebar" onclick="toggleSidebar()">☰</button>
+        <div class="content">
+            <aside class="sidebar" id="sidebar">
+                <br>
+                <br>
+                <br></br>
+                <h2>Menu</h2>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Beranda</a></li>
+                    <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                </ul>
+            </aside>
+            <main>
+        <p>Halaman ini akan menampilkan laporan dan analisis kerumunan.</p>
+        
+        <h2>Data Terakhir</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Jumlah Orang</th>
+                    <th>Jumlah Mobil</th>
+                    <th>Jumlah Motor</th>
+                    <th>Waktu</th>
+                    <th>Tingkat Keramaian</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in data %}
+                <tr>
+                    <td>{{ entry.people }}</td>
+                    <td>{{ entry.cars }}</td>
+                    <td>{{ entry.motorcycles }}</td>
+                    <td>{{ entry.timestamp }}</td>
+                    <td>{{ entry.crowd_level }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <footer>
+            <p>&copy; 2024 Sistem Deteksi Kerumunan</p>
+        </footer>
+    </div>
+</body>
+</html>
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('main');
+        
+        if (sidebar.style.display === 'block') {
+            sidebar.style.display = 'none';
+            mainContent.style.marginLeft = '0';
+        } else {
+            sidebar.style.display = 'block';
+            mainContent.style.marginLeft = '250px';
+        }
+    }
+    async function fetchData() {
+        try {
+            const response = await fetch('/data');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            updateTable(data);
+        } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+        }
+    }
+
+    function updateTable(data) {
+        const tableBody = document.querySelector('table tbody');
+        tableBody.innerHTML = ''; // Kosongkan tabel sebelum menambahkan data baru
+
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>${data.people}</td>
+            <td>${data.cars}</td>
+            <td>${data.motorcycles}</td>
+            <td>${getCurrentTime()}</td>
+            <td>${data.crowd_level}</td>
+        `;
+        tableBody.appendChild(newRow);
+    }
+
+    function getCurrentTime() {
+        const now = new Date();
+        return now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    // Ambil data saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', fetchData);
+</script>
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    header {
+        background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
+        padding: 20px;
+        text-align: center;
+        position: relative;
+    }
+
+    .navbar {
+        margin-top: 10px;
+    }
+
+    .navbar ul {
+        list-style-type: none;
+        display: flex;
+        justify-content: center;
+        padding: 0;
+    }
+
+    .navbar ul li {
+        margin: 0 15px;
+    }
+
+    .navbar a {
+        text-decoration: none;
+        color: white;
+        font-weight: bold;
+        transition: color 0.3s;
+    }
+
+    .navbar a:hover {
+        color: #ffeb3b;
+    }
+
+    .content {
+        display: flex;
+        flex: 1;
+    }
+
+    .sidebar {
+        background-color: #4285f4;
+        color: white;
+        padding: 20px;
+        width: 250px;
+        height: 112%;
+        display: none; /* Sembunyikan sidebar secara default */
+        position: absolute; /* Agar tidak mengganggu layout */
+        top: 0;
+        left: 0;
+        z-index: 1000; /* Agar sidebar berada di atas konten lainnya */
+    }
+
+    .sidebar h2 {
+        margin-top: 0;
+    }
+
+    .sidebar ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .sidebar ul li {
+        margin: 10px 0;
+    }
+
+    .sidebar ul li a {
+        color: white;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+
+    .sidebar ul li a:hover {
+        color: #ffeb3b;
+    }
+
+    main {
+        flex: 1;
+        padding: 20px;
+        margin-left: 0; /* Reset margin untuk konten utama */
+        transition: margin-left 0.3s; /* Animasi transisi untuk konten utama */
+    }
+
+    .dashboard {
+        margin-bottom: 20px;
+    }
+
+    .data-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 20px;
+    }
+
+    .card {
+        background-color: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: scale(1.05);
+    }
+
+    .card h3 {
+        margin: 0 0 10px;
+    }
+
+    .card p {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    #videoFeed {
+        width: 80%; /* Mengatur lebar video menjadi 80% dari lebar konten */
+        max-width: 600px; /* Maksimal lebar video */
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        display: block; /* Pastikan video ditampilkan sebagai block */
+        margin: 20px auto; /* Pusatkan video */
+    }
+
+    footer {
+        margin-top: auto;
+        background-color: #f1f1f1;
+        text-align: center;
+        padding: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%; /* Lebar penuh di perangkat kecil */
+            display: block; /* Tampilkan sidebar pada perangkat kecil */
+        }
+
+        .content {
+            flex-direction: column; /* Ubah arah konten ke kolom */
+        }
+
+        main {
+            margin-left: 0; /* Reset margin untuk konten utama */
+        }
+    }
+
+    .toggle-sidebar {
+        background-color: #6a11cb;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+        position: absolute;
+        top: 20px;
+        left: 20px; /* Pindahkan tombol ke kiri */
+        z-index: 1001; /* Agar tombol berada di atas */
+        border-radius: 5px; /* Tambahkan sedikit sudut melengkung */
+    }
+    table {
+        width: 100%; /* Mengatur lebar tabel menjadi 100% dari konten */
+        border-collapse: collapse; /* Menggabungkan border untuk tampilan yang lebih baik */
+        margin-top: 20px; /* Memberikan jarak antara elemen di atas tabel */
+        background-color: white; /* Latar belakang tabel */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Bayangan untuk efek kedalaman */
+    }
+    
+    th, td {
+        padding: 12px; /* Padding untuk cell tabel */
+        text-align: center; /* Mengatur teks menjadi rata tengah */
+        border: 1px solid #ddd; /* Border untuk cell tabel */
+    }
+    
+    th {
+        background-color: #4285f4; /* Latar belakang header tabel */
+        color: white; /* Warna teks header */
+    }
+    
+    tr:hover {
+        background-color: #f1f1f1; /* Efek hover pada baris tabel */
+    }
+    
+    tbody tr:nth-child(even) {
+        background-color: #f9f9f9; /* Latar belakang untuk baris genap */
+    }
+    
+    tbody tr:nth-child(odd) {
+        background-color: #ffffff; /* Latar belakang untuk baris ganjil */
+    }
+</style>
