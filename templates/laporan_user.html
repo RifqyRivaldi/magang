@@ -8,88 +8,74 @@
 <body>
     <header class="header">
         <button class="menu-btn">☰</button>
-        <h1>Sistem Deteksi Kerumunan</h1>
+        <h1>
+            
+            Sistem Deteksi Kerumunan
+        </h1>
+        <img src="https://i.ibb.co/pxX3fB6/RIVALDI-removebg.png" alt="RIVALDI" class="gambar-kecil">
         <a href="{{ url_for('logout') }}" class="btn logout-btn">Logout</a> <!-- Logout Button -->
     </header>
-    
+    <br>
     <nav class="sidebar">
+        <br>
         <a href="{{ url_for('index') }}">
-            <i>🏠</i> Beranda
+            <i>🏠</i>
+            Beranda
         </a>
-        <a href="{{ url_for('dashboard') }}" class="active">
-            <i>📊</i> Dashboard
-        </a>
-        <a href="{{ url_for('laporan') }}">
-            <i>📝</i> Laporan
+        <a href="{{ url_for('laporan') }}" class="active">
+            <i>📝</i>
+            Laporan
         </a>
     </nav>
 
     <main class="main-content">
         <div class="welcome-container">
             <div class="welcome-card">
-                <h2>Selamat Datang di Monitoring</h2>
-                <p>Monitoring pada website RIVALDI</p>
+                <h2>Laporan Data</h2>
+                <p>Sistem Deteksi Kerumunan membantu Anda memantau dan menganalisis kepadatan massa secara real-time. Dapatkan insights dan laporan terperinci untuk pengambilan keputusan yang lebih baik.</p>
                 <div class="btn-container">
-                    <a href="{{ url_for('index') }}" class="btn">
-                        <i>🏠</i> Lihat Beranda
+                    <a href="{{ url_for('laporan') }}" class="btn" id="reloadButton">
+                        <i>📝</i>
+                        Lihat Laporan
                     </a>
-                    <a href="{{ url_for('laporan') }}" class="btn outline">
-                        <i>📝</i> Lihat Laporan
+                    <a href="{{ url_for('index') }}" class="btn outline">
+                        <i>📊</i>
+                        Lihat Beranda
                     </a>
                 </div>
             </div>
         </div>
-
-        <section class="dashboard">
-            <div class="data-container">
-                <div class="card">
-                    <h3>Jumlah Orang</h3>
-                    <p id="peopleCount">0</p>
-                </div>
-                <div class="card">
-                    <h3>Jumlah Mobil</h3>
-                    <p id="carCount">0</p>
-                </div>
-                <div class="card">
-                    <h3>Jumlah Motor</h3>
-                    <p id="motorCount">0</p>
-                </div>
-                <div class="card">
-                    <h3>Waktu</h3>
-                    <p id="timestamp">00:00:00</p>
-                </div>
-                <div class="card">
-                    <h3>Tingkat Keramaian</h3>
-                    <p id="crowdLevel">normal</p>
-                </div>
-            </div>
-        </section>
+        <div>
+        <main>
+            <p>Halaman ini akan menampilkan laporan dan analisis kerumunan.</p>
+            
+            <h2>Data Terakhir</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Jumlah Orang</th>
+                        <th>Jumlah Mobil</th>
+                        <th>Jumlah Motor</th>
+                        <th>Waktu</th>
+                        <th>Tingkat Keramaian</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in data %}
+                    <tr>
+                        <td>{{ entry.people }}</td>
+                        <td>{{ entry.cars }}</td>
+                        <td>{{ entry.motorcycles }}</td>
+                        <td>{{ entry.timestamp }}</td>
+                        <td>{{ entry.crowd_level }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+       
+        </main>
         
-        <img src="{{ url_for('video_feed') }}" id="videoFeed" alt="Video Feed">
-
-        <div class="stats-container">
-            <div class="stat-card">
-                <i>👥</i>
-                <h3>Real-time</h3>
-                <p>Pemantauan Langsung</p>
-            </div>
-            <div class="stat-card">
-                <i>📊</i>
-                <h3>Analisis</h3>
-                <p>Data Terperinci</p>
-            </div>
-            <div class="stat-card">
-                <i>🔔</i>
-                <h3>Notifikasi</h3>
-                <p>Alert System</p>
-            </div>
-            <div class="stat-card">
-                <i>📱</i>
-                <h3>Responsif</h3>
-                <p>Multi Platform</p>
-            </div>
-        </div>  
-    </main>
 
     <footer>
         © 2024 RIVALDI Sistem Deteksi Kerumunan
@@ -101,6 +87,11 @@
             document.querySelector('.sidebar').classList.toggle('active');
         });
 
+        document.getElementById('reloadButton').addEventListener('click', function(event) {
+            event.preventDefault(); // Mencegah navigasi default
+            location.reload(); // Memuat ulang halaman
+        });
+        
         // Close sidebar when clicking outside on mobile
         document.addEventListener('click', (e) => {
             if (window.innerWidth <= 768) {
@@ -111,29 +102,41 @@
                 }
             }
         });
-
         async function fetchData() {
             try {
-                const response = await fetch('/data'); // Pastikan URL ini sesuai dengan endpoint yang benar
+                const response = await fetch('/data');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
                 const data = await response.json();
-                updateDashboard(data);
+                updateTable(data);
             } catch (error) {
-                console.error("Gagal mendapatkan data", error);
+                console.error('There was a problem with the fetch operation:', error);
             }
         }
-
-        function updateDashboard(data) {
-            document.getElementById('peopleCount').innerText = data.people;
-            document.getElementById('carCount').innerText = data.cars;
-            document.getElementById('motorCount').innerText = data.motorcycles;
-            document.getElementById('crowdLevel').innerText = data.crowd_level;
-
-            var now = new Date();
-            document.getElementById('timestamp').innerText = now.toLocaleTimeString();
+    
+        function updateTable(data) {
+            const tableBody = document.querySelector('table tbody');
+            tableBody.innerHTML = ''; // Kosongkan tabel sebelum menambahkan data baru
+    
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${data.people}</td>
+                <td>${data.cars}</td>
+                <td>${data.motorcycles}</td>
+                <td>${getCurrentTime()}</td>
+                <td>${data.crowd_level}</td>
+            `;
+            tableBody.appendChild(newRow);
         }
-
-        // Panggil fetchData setiap 5 detik
-        setInterval(fetchData, 1000);
+    
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+    
+        // Ambil data saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', fetchData);
     </script>
 </body>
 </html>
@@ -434,46 +437,92 @@
             grid-template-columns: 1fr;
         }
     }
-    .data-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        justify-content: center;
+    table {
+        width: 100%; /* Mengatur lebar tabel menjadi 100% dari konten */
+        border-collapse: collapse; /* Menggabungkan border untuk tampilan yang lebih baik */
+        margin-top: 20px; /* Memberikan jarak antara elemen di atas tabel */
+        background-color: white; /* Latar belakang tabel */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Bayangan untuk efek kedalaman */
     }
+    
+    th, td {
+        padding: 12px; /* Padding untuk cell tabel */
+        text-align: center; /* Mengatur teks menjadi rata tengah */
+        border: 1px solid #ddd; /* Border untuk cell tabel */
+    }
+    
+    th {
+        background-color: #4285f4; /* Latar belakang header tabel */
+        color: white; /* Warna teks header */
+    }
+    
+    tr:hover {
+        background-color: #f1f1f1; /* Efek hover pada baris tabel */
+    }
+    
+    tbody tr:nth-child(even) {
+        background-color: #f9f9f9; /* Latar belakang untuk baris genap */
+    }
+    
+    tbody tr:nth-child(odd) {
+        background-color: #ffffff; /* Latar belakang untuk baris ganjil */
+    }
+    /* Gaya untuk paragraf dan heading */
+.main-content p {
+    color: #555; /* Warna teks yang lebih lembut */
+    font-size: 1.1rem; /* Ukuran font yang lebih besar */
+    line-height: 1.6; /* Jarak antar garis */
+    margin-bottom: 20px; /* Jarak bawah */
+}
 
-    .card {
-        background-color: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 20px;
-        text-align: center;
-        width: 180px;
-        transition: transform 0.2s;
-    }
+.main-content h2 {
+    color: var(--primary); /* Warna yang konsisten dengan tema */
+    font-size: 2rem; /* Ukuran font heading */
+    margin-bottom: 15px; /* Jarak bawah */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Efek bayangan */
+}
 
-    .card:hover {
-        transform: scale(1.05);
-    }
+/* Tambahan efek pada tabel */
+table {
+    border-radius: 10px; /* Sudut membulat untuk tabel */
+    overflow: hidden; /* Menghindari overflow pada sudut membulat */
+}
 
-    #videoFeed {
-        width: 80%;
-        max-width: 600px;
-        margin: 20px auto;
-        display: block;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-    }
-    .logout-btn {
-        background: var(--secondary);
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 5px;
-        text-decoration: none;
-        transition: background 0.3s;
-        margin-left: 20px;
-    }
+th, td {
+    padding: 15px; /* Menambah padding */
+    text-align: center; /* Rata tengah */
+}
 
-    .logout-btn:hover {
-        background: var(--primary);
+/* Gaya untuk efek hover tabel */
+tr:hover {
+    background-color: rgba(72, 52, 212, 0.1); /* Warna hover yang serasi */
+    transition: background-color 0.3s; /* Transisi halus untuk efek hover */
+}
+
+/* Gaya untuk header tabel */
+th {
+    background-color: var(--primary); /* Warna latar belakang header */
+    color: white; /* Warna teks header */
+    font-weight: bold; /* Tebal untuk teks header */
+}
+
+/* Gaya untuk tabel responsif */
+@media (max-width: 768px) {
+    table {
+        font-size: 0.9rem; /* Ukuran font lebih kecil untuk perangkat kecil */
     }
+}
+.logout-btn {
+    background: var(--secondary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background 0.3s;
+    margin-left: 20px;
+}
+
+.logout-btn:hover {
+    background: var(--primary);
+}
 </style>

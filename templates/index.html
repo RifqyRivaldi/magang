@@ -13,6 +13,7 @@
                 Sistem Deteksi Kerumunan
             </h1>
             <img src="https://i.ibb.co/pxX3fB6/RIVALDI-removebg.png" alt="RIVALDI" class="gambar-kecil">
+            <a href="{{ url_for('logout') }}" class="btn logout-btn">Logout</a> <!-- Logout Button -->
         </header>
         <br>
         <nav class="sidebar">
@@ -392,5 +393,18 @@
             .welcome-container {
                 grid-template-columns: 1fr;
             }
+        }
+        .logout-btn {
+            background: var(--secondary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background 0.3s;
+            margin-left: 20px;
+        }
+    
+        .logout-btn:hover {
+            background: var(--primary);
         }
     </style>
