@@ -26,16 +26,18 @@ class Data(db.Model):
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    nim = db.Column(db.String(20), unique=True, nullable=False)  # Added NIM column
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
-    role = db.Column(db.String(50), nullable=False, default='mahasiswa')  # Default role is 'mahasiswa'
+    role = db.Column(db.String(50), nullable=False, default='mahasiswa')
 
     def __repr__(self):
-        return f'<User {self.username}, Role: {self.role}>'
+        return f'<User {self.username}, NIM: {self.nim}, Role: {self.role}>'
 
     @classmethod
-    def create_user(cls, username, password, role='mahasiswa'):
+    def create_user(cls, nim, username, password, role='mahasiswa'):
         new_user = cls(
+            nim=nim,  # Set the NIM field
             username=username,
             password=password,
             role=role

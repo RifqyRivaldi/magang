@@ -18,7 +18,7 @@
         <br>
         <nav class="sidebar">
             <br>
-            <a href="{{ url_for('index') }}" class="active">
+            <a href="{{ url_for('index') }}">
                 <i>🏠</i>
                 Beranda
             </a>
@@ -30,7 +30,7 @@
                 <i>📝</i>
                 Laporan
             </a>
-            <a href="{{ url_for('view_users') }}">
+            <a href="{{ url_for('view_users') }}" class="active">
                 <i>👤</i>
                 Lihat Pengguna
             </a>
@@ -39,8 +39,8 @@
         <main class="main-content">
             <div class="welcome-container">
                 <div class="welcome-card">
-                    <h2>Selamat Datang!</h2>
-                    <p>Sistem Deteksi Kerumunan membantu Anda memantau dan menganalisis kepadatan massa secara real-time. Dapatkan insights dan laporan terperinci untuk pengambilan keputusan yang lebih baik.</p>
+                    <h2>Lihat Pengguna</h2>
+                    <p>Daftar Pengguna Yang Tersimpan Didatabase Users</p>
                     <div class="btn-container">
                         <a href="{{ url_for('dashboard') }}" class="btn">
                             <i>📊</i>
@@ -50,34 +50,54 @@
                             <i>📝</i>
                             Lihat Laporan
                         </a>
-                        <a href="{{ url_for('laporan') }}" class="btn outline">
-                            <i>👤</i>
-                            Lihat Pengguna
-                        </a>
                     </div>
                 </div>
             </div>
 
             <div class="stats-container">
-                <div class="stat-card">
-                    <i>👥</i>
-                    <h3>Real-time</h3>
-                    <p>Pemantauan Langsung</p>
-                </div>
-                <div class="stat-card">
-                    <i>📊</i>
-                    <h3>Analisis</h3>
-                    <p>Data Terperinci</p>
-                </div>
-                <div class="stat-card">
-                    <i>🔔</i>
-                    <h3>Notifikasi</h3>
-                    <p>Alert System</p>
-                </div>
-                <div class="stat-card">
-                    <i>📱</i>
-                    <h3>Responsif</h3>
-                    <p>Multi Platform</p>
+                <div class="container mt-5">
+                    <h1>Daftar Pengguna</h1>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>NIM</th>
+                                <th>Username</th>
+                                <th>Password</th>
+                                <th>Role</th>
+                                <th>Aksi</th> <!-- New Actions Column -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user[0] }}</td>
+                                <td>{{ user[1] }}</td>
+                                <td>{{ user[2] }}</td>
+                                <td>{{ user[3] }}</td>  
+                                <td>{{ user[4] }}</td>  <!-- Role pengguna -->
+                                <td>
+                            
+                                        <!-- Edit Button with Green Icon -->
+                                        <form action="{{ url_for('edit_user', id=user[0]) }}" method="PUT" style="display:inline;">
+                                            <button type="submit" class="delete-btn" onclick="huuu">
+                                                <a href="https://imgbb.com/"><img src="https://i.ibb.co.com/4dqRP8S/edit.png" alt="edit"  class="small-icon"></a>
+                                            </button>
+                                          </form>   
+                                      
+                                        <!-- Delete Form with Red Icon -->
+                                        <form action="{{ url_for('delete_user', id=user[0]) }}" method="POST" style="display:inline;">
+                                            <button type="submit" class="delete-btn" onclick="return confirm('Are you sure you want to delete this user?');">
+                                                <a href="https://imgbb.com/"><img src="https://i.ibb.co.com/NycmVJN/delete.png" alt="delete"  class="small-icon"></a>
+                                            </button>
+                                          </form>
+                                      </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <br>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">Kembali ke Beranda</a>
                 </div>
             </div>
         </main>
@@ -411,8 +431,46 @@
             transition: background 0.3s;
             margin-left: 20px;
         }
-    
+
         .logout-btn:hover {
             background: var(--primary);
         }
+        .stats-container {
+            margin-top: 40px; /* Add some margin for spacing */
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse; /* Ensure borders are collapsed */
+        }
+        
+        th, td {
+            padding: 15px; /* Add padding for better spacing */
+            text-align: left; /* Align text to the left */
+            border-bottom: 1px solid #ddd; /* Add a bottom border */
+        }
+        
+        th {
+            background-color: var(--primary); /* Header background color */
+            color: white; /* Header text color */
+            font-weight: bold; /* Bold header text */
+        }
+        
+        tr:hover {
+            background-color: #f1f1f1; /* Change background on hover */
+        }
+        
+        .table-bordered {
+            border: 1px solid #ddd; /* Add border around the table */
+        }
+        
+        .table-bordered th, .table-bordered td {
+            border: 1px solid #ddd; /* Add border to table cells */
+        }
+
+        .small-icon {
+            width: 40px; /* Set the width to your preferred size */
+            height: 40px; /* Set the height to your preferred size */
+          }
+
     </style>

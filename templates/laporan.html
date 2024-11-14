@@ -30,6 +30,10 @@
             <i>📝</i>
             Laporan
         </a>
+        <a href="{{ url_for('view_users') }}">
+            <i>👤</i>
+            Lihat Pengguna
+        </a>
     </nav>
 
     <main class="main-content">
@@ -45,6 +49,10 @@
                     <a href="{{ url_for('dashboard') }}" class="btn outline">
                         <i>📊</i>
                         Lihat Dashboard
+                    </a>
+                    <a href="{{ url_for('view_users') }}" class="btn outline">
+                        <i>👤</i>
+                        Lihat Pengguna
                     </a>
                 </div>
             </div>
@@ -65,6 +73,17 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for entry in data %}
+                    <tr>
+                        <td>{{ entry.people }}</td>
+                        <td>{{ entry.cars }}</td>
+                        <td>{{ entry.motorcycles }}</td>
+                        <td>{{ entry.timestamp }}</td>
+                        <td>{{ entry.crowd_level }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                 <tbody>
                     {% for entry in data %}
                     <tr>
                         <td>{{ entry.people }}</td>

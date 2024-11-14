@@ -9,6 +9,7 @@
     <header class="header">
         <button class="menu-btn">☰</button>
         <h1>Sistem Deteksi Kerumunan</h1>
+        <img src="https://i.ibb.co/pxX3fB6/RIVALDI-removebg.png" alt="RIVALDI" class="gambar-kecil">
         <a href="{{ url_for('logout') }}" class="btn logout-btn">Logout</a> <!-- Logout Button -->
     </header>
     
@@ -21,6 +22,10 @@
         </a>
         <a href="{{ url_for('laporan') }}">
             <i>📝</i> Laporan
+        </a>
+        <a href="{{ url_for('view_users') }}">
+            <i>👤</i>
+            Lihat Pengguna
         </a>
     </nav>
 
@@ -35,6 +40,9 @@
                     </a>
                     <a href="{{ url_for('laporan') }}" class="btn outline">
                         <i>📝</i> Lihat Laporan
+                    </a>
+                    <a href="{{ url_for('view_users') }}" class="btn outline">
+                        <i>👤</i> Lihat Pengguna
                     </a>
                 </div>
             </div>
