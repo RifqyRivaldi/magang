@@ -6,9 +6,9 @@ $(document).ready(function() {
             method: "GET",
             success: function(data) {
                 // Update nilai di dashboard
-                $('#peopleCount').text(data.people);
-                $('#carCount').text(data.cars);
-                $('#motorCount').text(data.motorcycles);
+                $('#orangCount').text(data.orang);
+                $('#carCount').text(data.mobil);
+                $('#motorCount').text(data.motor);
 
                 // Update waktu terbaru
                 var now = new Date();

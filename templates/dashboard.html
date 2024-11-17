@@ -14,6 +14,7 @@
     </header>
     
     <nav class="sidebar">
+        <br>
         <a href="{{ url_for('index') }}">
             <i>🏠</i> Beranda
         </a>
@@ -52,15 +53,15 @@
             <div class="data-container">
                 <div class="card">
                     <h3>Jumlah Orang</h3>
-                    <p id="peopleCount">0</p>
+                    <p id="orang_count">0</p>
                 </div>
                 <div class="card">
                     <h3>Jumlah Mobil</h3>
-                    <p id="carCount">0</p>
+                    <p id="mobil_count">0</p>
                 </div>
                 <div class="card">
                     <h3>Jumlah Motor</h3>
-                    <p id="motorCount">0</p>
+                    <p id="motor_count">0</p>
                 </div>
                 <div class="card">
                     <h3>Waktu</h3>
@@ -68,7 +69,7 @@
                 </div>
                 <div class="card">
                     <h3>Tingkat Keramaian</h3>
-                    <p id="crowdLevel">normal</p>
+                    <p id="crown_level">normal</p>
                 </div>
             </div>
         </section>
@@ -109,7 +110,7 @@
             document.querySelector('.sidebar').classList.toggle('active');
         });
 
-        // Close sidebar when clicking outside on mobile
+        // Close sidebar when clicking outside on carse
         document.addEventListener('click', (e) => {
             if (window.innerWidth <= 768) {
                 const sidebar = document.querySelector('.sidebar');
@@ -131,10 +132,10 @@
         }
 
         function updateDashboard(data) {
-            document.getElementById('peopleCount').innerText = data.people;
-            document.getElementById('carCount').innerText = data.cars;
-            document.getElementById('motorCount').innerText = data.motorcycles;
-            document.getElementById('crowdLevel').innerText = data.crowd_level;
+            document.getElementById('orang_count').innerText = data.orang;
+            document.getElementById('mobil_count').innerText = data.mobil;
+            document.getElementById('motor_count').innerText = data.motor;
+            document.getElementById('tingkat_keramaian').innerText = data.crown_level;
 
             var now = new Date();
             document.getElementById('timestamp').innerText = now.toLocaleTimeString();

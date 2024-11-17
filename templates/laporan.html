@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Deteksi Kerumunan</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <header class="header">
@@ -62,39 +63,54 @@
             <p>Halaman ini akan menampilkan laporan dan analisis kerumunan.</p>
             
             <h2>Data Terakhir</h2>
+            <!-- Tombol untuk menghapus semua entri -->
+            <form action="/delete_all" method="post">
+                <button type="submit" onclick="return confirm('Apakah Anda yakin ingin menghapus semua entri?');">
+                    <i class="fas fa-trash-alt"></i> Hapus Semua
+                </button>
+            </form>
             <table>
                 <thead>
                     <tr>
+                        <th>No</th>
                         <th>Jumlah Orang</th>
                         <th>Jumlah Mobil</th>
                         <th>Jumlah Motor</th>
+                        <th>Gambar</th>
                         <th>Waktu</th>
                         <th>Tingkat Keramaian</th>
+                        <th>Aksi</th> <!-- Kolom untuk tombol hapus -->
+
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="data-table">
                     {% for entry in data %}
                     <tr>
-                        <td>{{ entry.people }}</td>
-                        <td>{{ entry.cars }}</td>
-                        <td>{{ entry.motorcycles }}</td>
-                        <td>{{ entry.timestamp }}</td>
-                        <td>{{ entry.crowd_level }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-                 <tbody>
-                    {% for entry in data %}
-                    <tr>
-                        <td>{{ entry.people }}</td>
-                        <td>{{ entry.cars }}</td>
-                        <td>{{ entry.motorcycles }}</td>
-                        <td>{{ entry.timestamp }}</td>
-                        <td>{{ entry.crowd_level }}</td>
+                        <td>{{ start_number + loop.index - 1 }}</td>
+                        <td>{{ entry[1] }}</td>
+                        <td>{{ entry[2] }}</td>
+                        <td>{{ entry[3] }}</td>
+                        <td>
+                            <img src="{{ entry[4] }}" alt="Foto" width="100">
+                        </td>
+                        <td>{{ entry[5] }}</td>
+                        <td>{{ entry[6] }}</td>
+                        <td>
+                            <form action="/delete/{{ entry[0] }}" method="post" style="display:inline;">
+                                <button type="submit" onclick="return confirm('Apakah Anda yakin ingin menghapus entri ini?');">
+                                    <i class="fas fa-trash"></i> Hapus
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            <div class="pagination">
+                {% for page in range(1, total_pages + 1) %}
+                    <a href="?page={{ page }}" class="{% if page == current_page %}active{% endif %}">{{ page }}</a>
+                {% endfor %}
+            </div>
         </div>
        
         </main>
@@ -120,42 +136,52 @@
                 }
             }
         });
+
+        // Fetch data from server to display in the table
         async function fetchData() {
             try {
-                const response = await fetch('/data');
+                const response = await fetch('/laporan');  // Pastikan endpoint ini mengembalikan data JSON
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                const data = await response.json();
-                updateTable(data);
+        
+                // Cek jika response content-type adalah JSON
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const data = await response.json();
+                    updateTable(data);
+                } else {
+                    throw new Error("Expected JSON, but received something else.");
+                }
             } catch (error) {
                 console.error('There was a problem with the fetch operation:', error);
             }
         }
-    
+        
+
+        // Update the table with the fetched data
         function updateTable(data) {
-            const tableBody = document.querySelector('table tbody');
-            tableBody.innerHTML = ''; // Kosongkan tabel sebelum menambahkan data baru
-    
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td>${data.people}</td>
-                <td>${data.cars}</td>
-                <td>${data.motorcycles}</td>
-                <td>${getCurrentTime()}</td>
-                <td>${data.crowd_level}</td>
-            `;
-            tableBody.appendChild(newRow);
+            const tableBody = document.getElementById('data-table');
+            tableBody.innerHTML = '';  // Clear existing table rows before adding new data
+
+            data.forEach(entry => {
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${entry.orang}</td>
+                    <td>${entry.mobil}</td>
+                    <td>${entry.motor}</td>
+                    <td><img src="${entry.gambar}" alt="Gambar Kerumunan" style="width: 100px; height: auto;"></td>
+                    <td>${entry.waktu}</td>
+                    <td>${entry.tingkat_keramaian}</td>
+                `;
+                tableBody.appendChild(newRow);
+            });
         }
-    
-        function getCurrentTime() {
-            const now = new Date();
-            return now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        }
-    
-        // Ambil data saat halaman dimuat
+
+        // Fetch data when the page loads
         document.addEventListener('DOMContentLoaded', fetchData);
     </script>
+    
 </body>
 </html>
 <style>
@@ -475,8 +501,9 @@
     }
     
     tr:hover {
-        background-color: #f1f1f1; /* Efek hover pada baris tabel */
+        background-color: #f1f1f1;
     }
+    
     
     tbody tr:nth-child(even) {
         background-color: #f9f9f9; /* Latar belakang untuk baris genap */
@@ -543,4 +570,64 @@ th {
 .logout-btn:hover {
     background: var(--primary);
 }
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.pagination a {
+    padding: 10px 15px;
+    margin: 0 5px;
+    border: 1px solid #007bff;
+    color: #007bff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination a.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.pagination a:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+@media (max-width: 600px) {
+    .pagination {
+        flex-wrap: wrap;
+    }
+    .pagination a {
+        flex: 1 1 100%;
+        text-align: center;
+    }
+}
+/* Tombol Hapus */
+form button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background-color: #ff4d4f; /* Warna merah */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+form button:hover {
+    background-color: #ff1a1d; /* Warna merah lebih gelap */
+}
+
+/* Ikon di dalam tombol */
+form button i {
+    font-size: 16px;
+}
+
 </style>
