@@ -7,6 +7,14 @@ from ultralytics import YOLO
 from datetime import datetime
 import winsound
 import os
+import threading
+import time
+from flask import send_file
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import io
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image
+from reportlab.lib import colors
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Secret key for session management
@@ -17,12 +25,20 @@ logging.basicConfig(level=logging.DEBUG)  # Logs all levels of messages (DEBUG, 
 
 # Load the pre-trained YOLO model
 model = YOLO('best (5).pt')
+# Model Camera Laptop
 cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+cap.set(cv2.CAP_PROP_FPS, 15)
+#  Model Camera CCTV
+# cap = cv2.VideoCapture('rtsp://admin:admin@10.3.1.165:8554/Streaming/Channels/101')
+
+
 
 # Thresholds for crowd detection
 crowd_thresholds = {
-    "normal": 5,
-    "medium": 15,
+    "normal": 3,
+    "medium": 10,
     "hard": 50
 }
 last_person_count = 0
@@ -97,6 +113,142 @@ def insert_detection_data(orang_count, mobil_count, motor_count, gambar, timesta
 if __name__ == '__main__':
     init_db()
     logging.info("Database initialized.")
+    
+#BACKEND
+def gen_frames_and_save_periodically():
+    global last_person_count, current_counts
+    last_save_time = time.time()  # Waktu terakhir data disimpan
+    frame_count = 0  # Hitung jumlah frame
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            logging.error("Failed to capture frame from video feed.")
+            break
+
+        frame_count += 1
+        if frame_count % 5 != 0:  # Proses setiap 5 frame
+            continue
+
+        try:
+            # Proses YOLO (deteksi)
+            results = model(frame)
+            orang_count, mobil_count, motor_count = 0, 0, 0
+            annotated_frame = frame  # Default ke frame asli
+
+            for result in results:
+                for detection in result.boxes.data:
+                    label = result.names[int(detection[5])]
+                    if label == "ORANG":
+                        orang_count += 1
+                    elif label == "MOBIL":
+                        mobil_count += 1
+                    elif label == "MOTOR":
+                        motor_count += 1
+
+                annotated_frame = result.plot()  # Frame dengan anotasi
+ 
+            # Tentukan tingkat keramaian
+            crowd_level = "normal"
+            if orang_count <= crowd_thresholds["normal"]:
+                crowd_level = "normal"
+            elif orang_count <= crowd_thresholds["medium"]:
+                crowd_level = "medium"
+            else:
+                crowd_level = "hard"
+
+            current_time = get_current_time()
+            current_counts["orang"] = orang_count
+            current_counts["mobil"] = mobil_count
+            current_counts["motor"] = motor_count
+            current_counts["tingkat_keramaian"] = crowd_level
+
+            # Simpan data setiap 30 detik
+            if time.time() - last_save_time >= 20:
+                gambar = save_detected_image(annotated_frame)
+                insert_detection_data(orang_count, mobil_count, motor_count, gambar, current_time, crowd_level)
+                last_save_time = time.time()
+                logging.info(f"Data saved at {current_time}")
+
+            # Sound alert jika jumlah orang bertambah
+            if orang_count > last_person_count:
+                winsound.Beep(1000, 200)
+
+            last_person_count = orang_count
+
+            # Tambahkan teks anotasi ke frame
+            cv2.putText(annotated_frame, f"Jumlah Orang: {orang_count}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            cv2.putText(annotated_frame, f"Jumlah Mobil: {mobil_count}", (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            cv2.putText(annotated_frame, f"Jumlah Motor: {motor_count}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            cv2.putText(annotated_frame, f"Waktu: {current_time}", (10, 160), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+            cv2.putText(annotated_frame, f"Tingkat Keramaian: {crowd_level}", (10, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+
+            if crowd_level == "hard":
+                cv2.putText(annotated_frame, "Kerumunan Terdeteksi!", (10, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
+            # Encode frame untuk streaming
+            ret, buffer = cv2.imencode('.jpg', annotated_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+        except Exception as e:
+            logging.error(f"Error in video stream processing: {e}")
+            break
+        
+def save_detected_image(frame):
+    # Generate timestamp untuk nama file unik
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    filename = f'detection_{timestamp}.jpg'
+    save_path = os.path.join('static', 'img', filename)
+
+    # Pastikan folder 'static/img/' ada
+    if not os.path.exists(os.path.dirname(save_path)):
+        os.makedirs(os.path.dirname(save_path))
+
+    # Simpan gambar
+    cv2.imwrite(save_path, frame)
+    logging.info(f"Image saved at {save_path}")
+    return filename  # Hanya kembalikan nama file
+
+
+
+
+# Misalkan ini adalah fungsi yang mengembalikan data
+def get_data_from_db():
+    # Kode untuk mengambil data dari database
+    return [
+        # Contoh data
+        [1, 50, 10, "image1.jpg", datetime.now(), "2024-11-17 12:00", "Ramah"],
+        [2, 30, 5, "image2.jpg", datetime.now(), "2024-11-17 12:01", "Ramah"],
+        # Tambahkan lebih banyak entri sesuai kebutuhan
+    ]
+
+# Ambil data dari fungsi
+data = get_data_from_db()
+
+# Sekarang Anda bisa mengurutkan dan memanipulasi data
+data.sort(key=lambda entry: entry[5], reverse=True)  # Mengurutkan berdasarkan waktu
+
+# Pagination
+items_per_page = 10
+total_items = len(data)
+total_pages = (total_items + items_per_page - 1) // items_per_page
+
+# Ambil halaman yang diminta (misal dari query string)
+current_page = 1  # Misalnya ini dari parameter URL
+start_index = (current_page - 1) * items_per_page
+end_index = start_index + items_per_page
+
+# Ambil data untuk halaman saat ini
+paged_data = data[start_index:end_index]
+
+# Render data pada template
+for entry in paged_data:
+    print(entry)  # Ganti dengan cara Anda menampilkan data di template
+
+
+# Data Setiap 30 detik dan dihitung setiap 2 menit
 
 
 
@@ -168,6 +320,28 @@ def index_user():
         flash('Please log in to access this page.')
         return redirect(url_for('login'))
     return render_template('index_user.html')  # Render index_user.html for mahasiswa
+
+@app.route('/user')
+def user_page():
+    return render_template('user.html')
+
+@app.route('/about')
+def about_page():
+    if 'user_id' not in session:
+        flash('Please log in to access this page.')
+        return redirect(url_for('login'))
+    return render_template('about.html')
+
+@app.route('/contact')
+def contact_page():
+    if 'user_id' not in session:
+        flash('Please log in to access this page.')
+        return redirect(url_for('login'))
+    return render_template('contact.html')
+
+# @app.route('/laporan1')
+# def laporan_user1_page():
+#     return render_template('laporan_user1.html')
 
 @app.route('/dashboard')
 def dashboard():
@@ -289,7 +463,7 @@ def laporan_user():
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(gen_frames_and_save_periodically(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/data')
 def data():
@@ -414,138 +588,126 @@ def delete_entry(entry_id):
         flash("Terjadi kesalahan saat menghapus entri.")
     return redirect(url_for('laporan'))
 
+@app.route('/download_pdf/<int:entry_id>', methods=['GET'])
+def download_pdf(entry_id):
+    # Ambil data dari database berdasarkan entry_id
+    with sqlite3.connect(DATABASE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM deteksi WHERE id = ?", (entry_id,))
+        entry = cursor.fetchone()
 
-def gen_frames():
-    global last_person_count, current_counts
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            logging.error("Failed to capture frame from video feed.")
-            break
+    if entry is None:
+        flash("Data tidak ditemukan.")
+        return redirect(url_for('laporan'))
 
-        try:
-            # Apply YOLO detection on the frame
-            results = model(frame)
-            orang_count, mobil_count, motor_count = 0, 0, 0
+    pdf_buffer = io.BytesIO()
+    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+    elements = []
 
-            # Loop through the detection results
-            for result in results:
-                for detection in result.boxes.data:
-                    label = result.names[int(detection[5])]
-                    if label == "ORANG":
-                        orang_count += 1
-                    elif label == "MOBIL":
-                        mobil_count += 1
-                    elif label == "MOTOR":
-                        motor_count += 1
+    # Header tabel
+    data = [["Kolom", "Detail"]]
 
-                # Ensure annotated_frame is assigned correctly
-                annotated_frame = result.plot()
+    # Gambar
+    image_path = os.path.join("static", "img", entry[4].split("/")[-1])
+    if os.path.exists(image_path):
+        img = Image(image_path, width=100, height=100)  # Atur ukuran gambar
+    else:
+        img = "Gambar Tidak Ditemukan"
 
-            # Save detected image
-            gambar = save_detected_image(annotated_frame)
+    # Tambahkan data ke tabel
+    data.extend([
+        ["ID", str(entry[0])],
+        ["Jumlah Orang", str(entry[1])],
+        ["Jumlah Mobil", str(entry[2])],
+        ["Jumlah Motor", str(entry[3])],
+        ["Gambar", img],
+        ["Waktu", str(entry[5])],
+        ["Tingkat Keramaian", str(entry[6])]
+    ])
 
-            # Get the current timestamp
-            current_time = get_current_time()
+    # Buat objek tabel
+    table = Table(data, colWidths=[150, 300])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.blue),  # Header background
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),  # Header text color
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Center align all text
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),  # Header font
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  # Padding for header
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),  # Add grid lines
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),  # Row background
+    ]))
 
-            # Set the crowd level based on the number of people detected
-            if orang_count <= crowd_thresholds["normal"]:
-                crowd_level = "normal"
-            elif orang_count <= crowd_thresholds["medium"]:
-                crowd_level = "medium"
-            else:
-                crowd_level = "hard"
+    elements.append(table)
 
-            # Insert detection data into the database
-            insert_detection_data(orang_count, mobil_count, motor_count, gambar, current_time, crowd_level)
+    # Build PDF
+    doc.build(elements)
+    pdf_buffer.seek(0)
 
-            # Update current counts
-            current_counts["orang"] = orang_count
-            current_counts["mobil"] = mobil_count
-            current_counts["motor"] = motor_count
-            current_counts["tingkat_keramaian"] = crowd_level
-
-            # Sound alert if the number of people increases
-            if orang_count > last_person_count:
-                winsound.Beep(1000, 200)
-
-            # Update the last person count
-            last_person_count = orang_count
-
-            # Add text annotations to the frame
-            cv2.putText(annotated_frame, f"Jumlah Orang: {orang_count}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            cv2.putText(annotated_frame, f"Jumlah Mobil: {mobil_count}", (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            cv2.putText(annotated_frame, f"Jumlah Motor: {motor_count}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            cv2.putText(annotated_frame, f"Waktu: {current_time}", (10, 160), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
-            cv2.putText(annotated_frame, f"Tingkat Keramaian: {crowd_level}", (10, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
-
-            if crowd_level == "hard":
-                cv2.putText(annotated_frame, "Kerumunan Terdeteksi!", (10, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-
-            # Encode frame to bytes for streaming
-            ret, buffer = cv2.imencode('.jpg', annotated_frame)
-            frame = buffer.tobytes()
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-        except Exception as e:
-            logging.error(f"Error in video stream processing: {e}")
-            break
-
-# def save_detected_image(frame):
-#     # Generate timestamp untuk nama file unik
-#     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-#     filename = f'detection_{timestamp}.jpg'
-#     save_path = os.path.join('static', 'img', filename)
-
-#     # Pastikan folder 'static/img/' ada
-#     if not os.path.exists(os.path.dirname(save_path)):
-#         os.makedirs(os.path.dirname(save_path))
-
-#     # Simpan gambar
-#     cv2.imwrite(save_path, frame)
-#     logging.info(f"Image saved at {save_path}")
-#     return filename  # Hanya kembalikan nama file
+    # Kirim PDF ke pengguna
+    return send_file(pdf_buffer, as_attachment=True, download_name=f'laporan_{entry_id}.pdf', mimetype='application/pdf')
 
 
+@app.route('/download_all_pdf', methods=['POST'])
+def download_all_pdf():
+    with sqlite3.connect(DATABASE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM deteksi")
+        entries = cursor.fetchall()
 
+    pdf_buffer = io.BytesIO()
+    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+    elements = []
 
-# Misalkan ini adalah fungsi yang mengembalikan data
-def get_data_from_db():
-    # Kode untuk mengambil data dari database
-    return [
-        # Contoh data
-        [1, 50, 10, "image1.jpg", datetime.now(), "2024-11-17 12:00", "Ramah"],
-        [2, 30, 5, "image2.jpg", datetime.now(), "2024-11-17 12:01", "Ramah"],
-        # Tambahkan lebih banyak entri sesuai kebutuhan
-    ]
+    # Header tabel
+    data = [["No", "Jumlah Orang", "Jumlah Mobil", "Jumlah Motor", "Gambar", "Waktu", "Tingkat Keramaian"]]
 
-# Ambil data dari fungsi
-data = get_data_from_db()
+    # Tambahkan data ke tabel
+    for index, entry in enumerate(entries):
+        # Ambil path gambar
+        image_path = os.path.join("static", "img", entry[4].split("/")[-1])
+        if os.path.exists(image_path):
+            img = Image(image_path, width=50, height=50)  # Atur ukuran gambar
+        else:
+            img = "Gambar Tidak Ditemukan"
 
-# Sekarang Anda bisa mengurutkan dan memanipulasi data
-data.sort(key=lambda entry: entry[5], reverse=True)  # Mengurutkan berdasarkan waktu
+        data.append([
+            str(index + 1),  # No
+            str(entry[1]),   # Jumlah Orang
+            str(entry[2]),   # Jumlah Mobil
+            str(entry[3]),   # Jumlah Motor
+            img,             # Gambar
+            str(entry[5]),   # Waktu
+            str(entry[6])    # Tingkat Keramaian
+        ])
 
-# Pagination
-items_per_page = 10
-total_items = len(data)
-total_pages = (total_items + items_per_page - 1) // items_per_page
+    # Buat objek tabel
+    table = Table(data, colWidths=[30, 70, 70, 70, 70, 100, 100])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.blue),  # Header background
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),  # Header text color
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Center align all text
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),  # Header font
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  # Padding for header
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),  # Add grid lines
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),  # Row background
+    ]))
 
-# Ambil halaman yang diminta (misal dari query string)
-current_page = 1  # Misalnya ini dari parameter URL
-start_index = (current_page - 1) * items_per_page
-end_index = start_index + items_per_page
+    elements.append(table)
 
-# Ambil data untuk halaman saat ini
-paged_data = data[start_index:end_index]
+    # Build PDF
+    doc.build(elements)
+    pdf_buffer.seek(0)
 
-# Render data pada template
-for entry in paged_data:
-    print(entry)  # Ganti dengan cara Anda menampilkan data di template
+    return send_file(pdf_buffer, as_attachment=True, download_name='laporan_semua_data.pdf', mimetype='application/pdf')
 
 
 
 if __name__ == "__main__":
     try:
+        # Jalankan thread untuk menyimpan data setiap 30 detik
+        threading.Thread(target=gen_frames_and_save_periodically, daemon=True).start()
+        
+        # Jalankan aplikasi Flask
         app.run(debug=True, host='0.0.0.0', port=5000)
         logging.info("Flask app is running.")
     except Exception as e:
