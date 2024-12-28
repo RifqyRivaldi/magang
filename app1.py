@@ -27,7 +27,7 @@ logging.basicConfig(level=logging.DEBUG)  # Logs all levels of messages (DEBUG, 
 model = YOLO('best (8).pt')
 # Model Camera Laptop
  # IP dari aplikasi kamera HP
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 # cap = cv2.VideoCapture(0)
 # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)

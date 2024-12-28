@@ -72,7 +72,7 @@
             </form>
             <br/>
             <form download class="download icon pdf" action="{{ url_for('download_all_pdf') }}" method="post">
-                <button class="fas fa-download pdf" type="submit" >Unduh Semua PDF</button>
+                <button class="btn btn-download"><i class="fa fa-download"></i> Unduh Semua PDF</button>
             </form>
             <table>
                 <thead>
@@ -745,5 +745,37 @@ form button i {
 /* Menambahkan efek pada ikon */
 .download-icon-pdf:hover i {
     color: #ffdd57; /* Warna ikon saat hover */
+}
+.btn-download {
+    background-color: #28a745; /* Warna hijau */
+    color: #fff;
+    border: none;
+    border-radius: 4px; /* Samakan dengan .download-icon */
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-download:hover {
+    background-color: #218838; /* Warna hijau lebih gelap */
+}
+
+/* Ikon di dalam tombol */
+.btn i {
+    font-size: 16px;
+    margin-right: 5px; /* Samakan jarak dengan .download-icon */
+}
+
+.download-icon {
+    display: inline-flex; /* Sama dengan form button */
+    align-items: center;
+    justify-content: center; /* Tambahkan untuk konsistensi */
+    text-decoration: none;
+    color: #fff;
+    background-color: #007bff; /* Warna latar belakang biru */
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
 }
 </style>

@@ -99,13 +99,13 @@
         </div>
         <!-- Full Screen Search End -->
 
-
         <!-- Contact Start -->
         <div class="contact-section py-5">
-            <p>Halaman ini akan menampilkan laporan dan analisis kerumunan.</p>
-            
-            <h2>Data Terakhir</h2>
-            <table class="elegant-table">
+            <div class="content">
+                <p>Halaman ini akan menampilkan laporan dan analisis kerumunan.</p>
+                <h2>Laporan Data</h2>
+            </div>
+            <table>
                 <thead>
                     <tr>
                         <th>No</th>
@@ -115,9 +115,6 @@
                         <th>Gambar</th>
                         <th>Waktu</th>
                         <th>Tingkat Keramaian</th>
-                    
-
-
                     </tr>
                 </thead>
                 <tbody id="data-table">
@@ -281,151 +278,41 @@ document.addEventListener('DOMContentLoaded', fetchData);
 </script>
 
 <style>
-    /* Container Styling */
-    .contact-section {
-        background-color: #f8f9fa;
-        padding: 60px 0;
-    }
-    
-    /* Section Title Styling */
-    .contact-subtitle {
-        font-size: 18px;
-        font-weight: bold;
-        color: #007bff;
-        text-transform: uppercase;
-    }
-    
-    .contact-heading {
-        font-size: 36px;
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 30px;
-    }
-    
-    /* List Styling */
-    .contact-list {
-        padding: 0;
-        margin: 0;
-        list-style-type: none;
-    }
-    
-    .contact-item {
-        font-size: 20px;
-        margin-bottom: 25px;
-        color: #444;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transform: translateY(50px) scale(0.9); /* Efek awal: slide-down dan lebih kecil */
-        animation: fadeSlideScaleUp 1s ease forwards; /* Animasi */
-    }
-    
-    /* Icon Styling */
-    .contact-icon {
-        font-size: 35px;
-        color: #007bff;
-        margin-right: 15px;
-    }
-    
-    /* Link Styling */
-    .contact-item a {
-        text-decoration: none;
-        color: #007bff;
-        font-weight: 600;
-        transition: color 0.3s ease;
-    }
-    
-    .contact-item a:hover {
-        color: #0056b3;
-        text-decoration: underline;
-    }
-    
-    /* Animasi Fade-in, Slide-up, dan Scale-up */
-    @keyframes fadeSlideScaleUp {
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-    }
-    
-    /* Delay untuk setiap item agar muncul bertahap */
-    .contact-item:nth-child(1) { animation-delay: 0.3s; }
-    .contact-item:nth-child(2) { animation-delay: 0.5s; }
-    .contact-item:nth-child(3) { animation-delay: 0.7s; }
-    .contact-item:nth-child(4) { animation-delay: 0.9s; }
-    .contact-item:nth-child(5) { animation-delay: 1.1s; }   
-    
-    .contact-section {
-        background-color: #f9f9f9;
-        padding: 1.5rem 1rem;
-        font-family: 'Arial', sans-serif;
-    }
-    
-    .contact-section p {
-        font-size: 1.1rem; /* Sedikit lebih besar */
-        color: #333;
-        margin-bottom: 1rem;
-        text-align: center;
-    }
-    
-    .contact-section h2 {
-        font-size: 1.8rem; /* Ukuran judul lebih besar */
-        color: #0056b3;
-        text-align: center;
-        margin-bottom: 1.5rem;
-        font-weight: bold;
-        text-transform: uppercase;
-    }
-    
-    body {
-        font-family: 'Arial', sans-serif;
-        background-color: #f4f7f9;
-        margin: 0;
-        padding: 20px;
-    }
-    
-    .elegant-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        overflow: hidden;
-    }
-    
-    .elegant-table thead {
-        background-color: #5c6bc0; /* Warna header */
-        color: #ffffff;
-    }
-    
-    .elegant-table th, .elegant-table td {
-        padding: 12px 15px;
-        text-align: center;
-        border: 1px solid #dddddd; /* Garis setiap sel */
-    }
-    
-    .elegant-table tbody tr {
-        background-color: #ffffff;
-        transition: background-color 0.3s;
-    }
-    
-    .elegant-table tbody tr:hover {
-        background-color: #f1f1f1; /* Warna saat hover */
-    }
-    
-    .elegant-table tbody td {
-        font-size: 14px;
-    }
-    
-
-
-/* Gaya untuk tabel responsif */
-@media (max-width: 768px) {
     table {
-        font-size: 0.9rem; /* Ukuran font lebih kecil untuk perangkat kecil */
+        width: 85%; /* Lebar tabel diatur menjadi 80% dari container */
+        margin: 20px auto; /* Memusatkan tabel secara horizontal */
+        border-collapse: collapse; /* Menggabungkan border untuk tampilan yang lebih baik */
+        background-color: white; /* Latar belakang tabel */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Bayangan untuk efek kedalaman */
+        color: black; /* Warna teks hitam untuk semua konten tabel */
     }
-}
+    
+    th, td {
+        padding: 8px; /* Padding untuk cell tabel */
+        text-align: center; /* Mengatur teks menjadi rata tengah */
+        border: 1px solid #ddd; /* Border untuk cell tabel */
+        font-size: 0.9em; /* Ukuran font lebih kecil */
+        color: black; /* Warna teks hitam */
+    }
+    
+    th {
+        background-color: #4285f4; /* Latar belakang header tabel dengan biru */
+        color: white; /* Warna teks header menjadi putih agar kontras */
+        font-weight: bold; /* Membuat teks header tebal */
+    }
+    
+    tr:hover {
+        background-color: #f1f1f1; /* Efek hover pada baris */
+    }
+    
+    tbody tr:nth-child(even) {
+        background-color: #f9f9f9; /* Latar belakang untuk baris genap */
+    }
+    
+    tbody tr:nth-child(odd) {
+        background-color: #ffffff; /* Latar belakang untuk baris ganjil */
+    }
+    
 .logout-btn {
     background: var(--secondary);
     color: white;
@@ -540,4 +427,49 @@ th {
     font-size: 16px; /* Sama dengan ikon di tombol form */
     margin-right: 5px; /* Jarak antara ikon dan teks */
 }
+/* Animasi Fade-in */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Gaya Paragraf */
+p {
+    font-size: 1.1rem; /* Ukuran teks paragraf */
+    color: #333; /* Warna teks abu gelap */
+    line-height: 1.6; /* Jarak antar baris */
+    font-family: 'Roboto', sans-serif; /* Font yang bersih dan modern */
+    text-align: center; /* Teks rata tengah */
+    animation: fadeIn 1s ease-in-out; /* Animasi fade-in */
+    margin-bottom: 20px; /* Memberikan jarak bawah */
+}
+
+/* Gaya Heading */
+h2 {
+    font-size: 2rem; /* Ukuran teks heading */
+    color:#2124B1; /* Warna biru tua */
+    text-transform: uppercase; /* Kapitalisasi teks */
+    font-family: 'Heebo', sans-serif; /* Font heading yang modern */
+    text-align: center; /* Teks rata tengah */
+    letter-spacing: 2px; /* Memberikan jarak antar huruf */
+    animation: fadeIn 1.2s ease-in-out; /* Animasi fade-in dengan jeda lebih lama */
+    position: relative; /* Posisi relatif untuk dekorasi */
+}
+
+h2::after {
+    content: ''; /* Elemen dekorasi */
+    display: block;
+    width: 60px; /* Panjang garis bawah */
+    height: 4px; /* Ketebalan garis */
+    background-color: #2124B1; /* Warna garis biru */
+    margin: 10px auto 0; /* Memusatkan garis */
+    animation: fadeIn 1.5s ease-in-out; /* Animasi garis bawah */
+}
+
 </style>    
