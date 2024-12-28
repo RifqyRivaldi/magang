@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Deteksi Kerumunan</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <button class="menu-btn">☰</button>
+        <h1>
+            
+            Sistem Deteksi Kerumunan
+        </h1>
+        <img src="https://i.ibb.co/pxX3fB6/RIVALDI-removebg.png" alt="RIVALDI" class="gambar-kecil">
+        <a href="{{ url_for('logout') }}" class="btn logout-btn">Logout</a> <!-- Logout Button -->
+    </header>
+    <br>
+    <nav class="sidebar">
+        <br>
+        <a href="{{ url_for('index') }}">
+            <i>🏠</i>
+            Beranda
+        </a>
+        <a href="{{ url_for('laporan_user') }}" class="active">
+            <i>📝</i>
+            Laporan
+        </a>
+    </nav>
+
+    <main class="main-content">
+        <div class="welcome-container">
+            <div class="welcome-card">
+                <h2>Laporan Data</h2>
+                <p>Sistem Deteksi Kerumunan membantu Anda memantau dan menganalisis kepadatan massa secara real-time. Dapatkan insights dan laporan terperinci untuk pengambilan keputusan yang lebih baik.</p>
+                <div class="btn-container">
+                    <a href="{{ url_for('laporan_user') }}" class="btn" id="reloadButton">
+                        <i>📝</i>
+                        Lihat Laporan
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn outline">
+                        <i>📊</i>
+                        Lihat Beranda
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div>
+        <main>
+            <p>Halaman ini akan menampilkan laporan dan analisis kerumunan.</p>
+            
+            <h2>Data Terakhir</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Jumlah Orang</th>
+                        <th>Jumlah Mobil</th>
+                        <th>Jumlah Motor</th>
+                        <th>Gambar</th>
+                        <th>Waktu</th>
+                        <th>Tingkat Keramaian</th>
+
+
+                    </tr>
+                </thead>
+                <tbody id="data-table">
+                    {% for entry in data %}
+                    <tr>
+                        <td>{{ start_number + loop.index - 1 }}</td>
+                        <td>{{ entry[1] }}</td>
+                        <td>{{ entry[2] }}</td>
+                        <td>{{ entry[3] }}</td>
+                        <td>
+                            <img src="{{ entry[4] }}" alt="Foto" width="100">
+                        </td>
+                        <td>{{ entry[5] }}</td>
+                        <td>{{ entry[6] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="pagination">
+                {% for page in range(1, total_pages + 1) %}
+                    <a href="?page={{ page }}" class="{% if page == current_page %}active{% endif %}">{{ page }}</a>
+                {% endfor %}
+            </div>
+        </div>
+       
+        </main>
+        
+
+    <footer>
+        © 2024 RIVALDI Sistem Deteksi Kerumunan
+    </footer>
+
+    <script>
+        // Toggle Sidebar
+        document.querySelector('.menu-btn').addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+
+        document.getElementById('reloadButton').addEventListener('click', function(event) {
+            event.preventDefault(); // Mencegah navigasi default
+            location.reload(); // Memuat ulang halaman
+        });
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.querySelector('.sidebar');
+                const menuBtn = document.querySelector('.menu-btn');
+                if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+    // Fetch data from server to display in the table
+    async function fetchData() {
+        try {
+            const response = await fetch('/laporan');  // Pastikan endpoint ini mengembalikan data JSON
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+    
+            // Cek jika response content-type adalah JSON
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                const data = await response.json();
+                updateTable(data);
+            } else {
+                throw new Error("Expected JSON, but received something else.");
+            }
+        } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+        }
+    }
+    
+
+    // Update the table with the fetched data
+    function updateTable(data) {
+        const tableBody = document.getElementById('data-table');
+        tableBody.innerHTML = '';  // Clear existing table rows before adding new data
+
+        data.forEach(entry => {
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${entry.orang}</td>
+                <td>${entry.mobil}</td>
+                <td>${entry.motor}</td>
+                <td><img src="${entry.gambar}" alt="Gambar Kerumunan" style="width: 100px; height: auto;"></td>
+                <td>${entry.waktu}</td>
+                <td>${entry.tingkat_keramaian}</td>
+            `;
+            tableBody.appendChild(newRow);
+        });
+    }
+
+    // Fetch data when the page loads
+    document.addEventListener('DOMContentLoaded', fetchData);
+</script>
+</body>
+</html>
+<style>
+    :root {
+        --primary: #4834d4;
+        --secondary: #686de0; 
+        --accent: #30336b;
+        --light: #f5f6fa;
+        --text: #2d3436;
+        --gradient: linear-gradient(135deg, #4834d4 0%, #686de0 100%);
+        --glass: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: var(--light);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Header Styles */
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(72, 52, 212, 0.98);
+        backdrop-filter: blur(10px);
+        color: white;
+        padding: 1rem 2rem;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 4px 30px rgba(72, 52, 212, 0.3);
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .header h1 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .header img.gambar-kecil {
+        width: 40px;
+        height: auto;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        width: 300px;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        padding-top: 85px;
+        transition: 0.4s ease;
+        box-shadow: 4px 0 30px rgba(0,0,0,0.1);
+        border-right: 1px solid rgba(72, 52, 212, 0.1);
+    }
+
+    .sidebar a {
+        color: var(--text);
+        text-decoration: none;
+        padding: 1.4rem 2rem;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+        margin: 0.3rem 1rem;
+        border-radius: 12px;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+        background: var(--gradient);
+        color: white;
+        border-left: 4px solid white;
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(72, 52, 212, 0.3);
+    }
+
+    .sidebar a i {
+        font-size: 1.6rem;
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar a:hover i {
+        transform: scale(1.1);
+    }
+
+    /* Main Content */
+    .main-content {
+        margin-left: 300px;
+        padding: 100px 40px 40px;
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .welcome-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-bottom: 40px;
+    }
+
+    .welcome-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        transition: 0.3s;
+        border: 1px solid rgba(72, 52, 212, 0.1);
+    }
+
+    .welcome-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(72, 52, 212, 0.15);
+    }
+
+    .welcome-card h2 {
+        color: var(--primary);
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .welcome-card p {
+        color: #666;
+        line-height: 1.8;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-container {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.8rem 1.8rem;
+        background: var(--gradient);
+        color: white;
+        text-decoration: none;
+        border-radius: 12px;
+        transition: 0.3s;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(72, 52, 212, 0.2);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(72, 52, 212, 0.3);
+    }
+
+    .btn.outline {
+        background: transparent;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        box-shadow: none;
+    }
+
+    .btn.outline:hover {
+        background: var(--gradient);
+        color: white;
+        box-shadow: 0 8px 20px rgba(72, 52, 212, 0.3);
+    }
+
+    /* Statistics Cards */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        transition: 0.3s;
+        border: 1px solid rgba(72, 52, 212, 0.1);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(72, 52, 212, 0.15);
+    }
+
+    .stat-card i {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+        display: inline-block;
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover i {
+        transform: scale(1.1);
+    }
+
+    .stat-card h3 {
+        color: var(--text);
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-card p {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    /* Footer */
+    footer {
+        background: var(--accent);
+        color: white;
+        text-align: center;
+        padding: 1.5rem;
+        margin-top: auto;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+    }
+
+    /* Menu Button */
+    .menu-btn {
+        display: none;
+        background: var(--glass);
+        border: 1px solid var(--glass-border);
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .menu-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .sidebar {
+            width: 280px;
+        }
+        .main-content {
+            margin-left: 280px;
+            padding: 100px 20px 20px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            transform: translateX(-100%);
+            z-index: 99;
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        .main-content {
+            margin-left: 0;
+        }
+
+        .menu-btn {
+            display: block;
+        }
+
+        .welcome-container {
+            grid-template-columns: 1fr;
+        }
+    }
+    table {
+        width: 100%; /* Mengatur lebar tabel menjadi 100% dari konten */
+        border-collapse: collapse; /* Menggabungkan border untuk tampilan yang lebih baik */
+        margin-top: 20px; /* Memberikan jarak antara elemen di atas tabel */
+        background-color: white; /* Latar belakang tabel */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Bayangan untuk efek kedalaman */
+    }
+    
+    th, td {
+        padding: 12px; /* Padding untuk cell tabel */
+        text-align: center; /* Mengatur teks menjadi rata tengah */
+        border: 1px solid #ddd; /* Border untuk cell tabel */
+    }
+    
+    th {
+        background-color: #4285f4; /* Latar belakang header tabel */
+        color: white; /* Warna teks header */
+    }
+    
+    tr:hover {
+        background-color: #f1f1f1; /* Efek hover pada baris tabel */
+    }
+    
+    tbody tr:nth-child(even) {
+        background-color: #f9f9f9; /* Latar belakang untuk baris genap */
+    }
+    
+    tbody tr:nth-child(odd) {
+        background-color: #ffffff; /* Latar belakang untuk baris ganjil */
+    }
+    /* Gaya untuk paragraf dan heading */
+.main-content p {
+    color: #555; /* Warna teks yang lebih lembut */
+    font-size: 1.1rem; /* Ukuran font yang lebih besar */
+    line-height: 1.6; /* Jarak antar garis */
+    margin-bottom: 20px; /* Jarak bawah */
+}
+
+.main-content h2 {
+    color: var(--primary); /* Warna yang konsisten dengan tema */
+    font-size: 2rem; /* Ukuran font heading */
+    margin-bottom: 15px; /* Jarak bawah */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Efek bayangan */
+}
+
+/* Tambahan efek pada tabel */
+table {
+    border-radius: 10px; /* Sudut membulat untuk tabel */
+    overflow: hidden; /* Menghindari overflow pada sudut membulat */
+}
+
+th, td {
+    padding: 15px; /* Menambah padding */
+    text-align: center; /* Rata tengah */
+}
+
+/* Gaya untuk efek hover tabel */
+tr:hover {
+    background-color: rgba(72, 52, 212, 0.1); /* Warna hover yang serasi */
+    transition: background-color 0.3s; /* Transisi halus untuk efek hover */
+}
+
+/* Gaya untuk header tabel */
+th {
+    background-color: var(--primary); /* Warna latar belakang header */
+    color: white; /* Warna teks header */
+    font-weight: bold; /* Tebal untuk teks header */
+}
+
+/* Gaya untuk tabel responsif */
+@media (max-width: 768px) {
+    table {
+        font-size: 0.9rem; /* Ukuran font lebih kecil untuk perangkat kecil */
+    }
+}
+.logout-btn {
+    background: var(--secondary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background 0.3s;
+    margin-left: 20px;
+}
+
+.logout-btn:hover {
+    background: var(--primary);
+}
+/* Gaya untuk efek hover tabel */
+tr:hover {
+    background-color: rgba(72, 52, 212, 0.1); /* Warna hover yang serasi */
+    transition: background-color 0.3s; /* Transisi halus untuk efek hover */
+}
+
+/* Gaya untuk header tabel */
+th {
+    background-color: var(--primary); /* Warna latar belakang header */
+    color: white; /* Warna teks header */
+    font-weight: bold; /* Tebal untuk teks header */
+}
+
+/* Gaya untuk tabel responsif */
+@media (max-width: 768px) {
+    table {
+        font-size: 0.9rem; /* Ukuran font lebih kecil untuk perangkat kecil */
+    }
+}
+.logout-btn {
+    background: var(--secondary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background 0.3s;
+    margin-left: 20px;
+}
+
+.logout-btn:hover {
+    background: var(--primary);
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.pagination a {
+    padding: 10px 15px;
+    margin: 0 5px;
+    border: 1px solid #007bff;
+    color: #007bff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination a.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.pagination a:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+@media (max-width: 600px) {
+    .pagination {
+        flex-wrap: wrap;
+    }
+    .pagination a {
+        flex: 1 1 100%;
+        text-align: center;
+    }
+}
+
+
+</style>

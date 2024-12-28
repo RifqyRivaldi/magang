@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>SEO RIVALDI</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Favicon -->
+    <link href="{{ url_for('static', filename='foto/favicon.icon') }}" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"> 
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="{{ url_for('static', filename='lib/animate/animate.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='lib/lightbox/css/lightbox.min.css') }}" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+
+<body>
+   
+        <!-- Spinner End -->
+
+
+        <!-- Navbar & Hero Start -->
+        <div class="container-xxl position-relative p-0">
+            <nav class="navbar navbar-expand-lg navbar-light px-4 px-lg-5 py-3 py-lg-0">
+                <a href="" class="navbar-brand p-0">
+                    <h1 class="m-0"><i class="fa fa-search me-2"></i>SEO<span class="fs-5">Rivaldi</span></h1>
+                    <!-- <img src="img/logo.png" alt="Logo"> -->
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                    <span class="fa fa-bars"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <div class="navbar-nav ms-auto py-0">
+                        <a href="index_user" class="nav-item nav-link">Home</a>
+                        <a href="about" class="nav-item nav-link">About</a>
+                        <a href="laporan_user" class="nav-item nav-link active">Laporan</a>
+                        <a href="contact" class="nav-item nav-link">Contact</a>
+                    </div>
+                    <butaton type="button" class="btn text-secondary ms-3" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="fa fa-search"></i></butaton>
+                    <a href="{{ url_for('logout') }}" class="btn logout-btn">Logout</a> <!-- Logout Button -->
+                </div>
+            </nav>
+
+            <div class="container-xxl py-5 bg-primary hero-header mb-5">
+                <div class="container my-5 py-5 px-lg-5">
+                    <div class="row g-5 py-5">
+                        <div class="col-12 text-center">
+                            <h1 class="text-white animated zoomIn">Laporan Data</h1>
+                            <hr class="bg-white mx-auto mt-0" style="width: 90px;">
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb justify-content-center">
+                                    <li class="breadcrumb-item"><a class="text-white" href="user">Home</a></li>
+                                    <li class="breadcrumb-item"><a class="text-white" href="about">About</a></li>
+                                    <li class="breadcrumb-item text-white active" aria-current="page">Contact</li>
+                                </ol>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Navbar & Hero End -->
+
+
+        <!-- Full Screen Search Start -->
+        <div class="modal fade" id="searchModal" tabindex="-1">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content" style="background: rgba(29, 29, 39, 0.7);">
+                    <div class="modal-header border-0">
+                        <button type="button" class="btn bg-white btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body d-flex align-items-center justify-content-center">
+                        <div class="input-group" style="max-width: 600px;">
+                            <input type="text" class="form-control bg-transparent border-light p-3" placeholder="Type search keyword">
+                            <button class="btn btn-light px-4"><i class="bi bi-search"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Full Screen Search End -->
+
+
+        <!-- Contact Start -->
+        <div class="contact-section py-5">
+            <p>Halaman ini akan menampilkan laporan dan analisis kerumunan.</p>
+            
+            <h2>Data Terakhir</h2>
+            <table class="elegant-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Jumlah Orang</th>
+                        <th>Jumlah Mobil</th>
+                        <th>Jumlah Motor</th>
+                        <th>Gambar</th>
+                        <th>Waktu</th>
+                        <th>Tingkat Keramaian</th>
+                    
+
+
+                    </tr>
+                </thead>
+                <tbody id="data-table">
+                    {% for entry in data %}
+                    <tr>
+                        <td>{{ start_number + loop.index - 1 }}</td>
+                        <td>{{ entry[1] }}</td>
+                        <td>{{ entry[2] }}</td>
+                        <td>{{ entry[3] }}</td>
+                        <td>
+                            <img src="{{ entry[4] }}" alt="Foto" width="100">
+                        </td>
+                        <td>{{ entry[5] }}</td>
+                        <td>{{ entry[6] }}</td>
+                       
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <div class="pagination">
+                {% for page in range(1, total_pages + 1) %}
+                    <a href="?page={{ page }}" class="{% if page == current_page %}active{% endif %}">{{ page }}</a>
+                {% endfor %}
+            </div>
+        </div>
+            
+        
+        <!-- Contact End -->
+        
+
+        <!-- Footer Start -->
+        <div class="container-fluid bg-primary text-light footer mt-5 pt-5 wow fadeIn" data-wow-delay="0.1s">
+            <div class="container py-5 px-lg-5">
+                <div class="row g-5">
+                    <div class="col-md-6 col-lg-3">
+                        <h5 class="text-white mb-4">Hubungi</h5>
+                        <p><i class="fa fa-map-marker-alt me-3"></i>UNS PSDKU MADIUN</p>
+                        <p><i class="fa fa-phone-alt me-3"></i>088803762135</p>
+                        <p><i class="fa fa-envelope me-3"></i>rifqyrivaldi93@student.uns.ac.id</p>
+                        <div class="d-flex pt-2">
+                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-twitter"></i></a>
+                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-facebook-f"></i></a>
+                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-youtube"></i></a>
+                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-instagram"></i></a>
+                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <h5 class="text-white mb-4">Popular Link</h5>
+                        <a class="btn btn-link" href="about">About Us</a>
+                        <a class="btn btn-link" href="contact">Contact Us</a>
+                        
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <h5 class="text-white mb-4">Project Gallery</h5>
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <img class="img-fluid" src="{{ url_for('static', filename='foto/portfolio-1.jpg') }}" alt="Image">
+                            </div>
+                            <div class="col-4">
+                                <img class="img-fluid" src="{{ url_for('static', filename='foto/portfolio-2.jpg') }}" alt="Image">
+                            </div>
+                            <div class="col-4">
+                                <img class="img-fluid" src="{{ url_for('static', filename='foto/portfolio-3.jpg') }}" alt="Image">
+                            </div>
+    
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <h5 class="text-white mb-4">Newsletter</h5>
+                        <p>Lorem ipsum dolor sit amet elit. Phasellus nec pretium mi. Curabitur facilisis ornare velit non vulpu</p>
+                        <div class="position-relative w-100 mt-3">
+                            <input class="form-control border-0 rounded-pill w-100 ps-4 pe-5" type="text" placeholder="Your Email" style="height: 48px;">
+                            <button type="button" class="btn shadow-none position-absolute top-0 end-0 mt-1 me-2"><i class="fa fa-paper-plane text-primary fs-4"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container px-lg-5">
+                <div class="copyright">
+                    <div class="row">
+                        <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                            &copy; <a class="border-bottom" href="#">RIVALDI All Right Reserved. 
+							
+							<!--/*** This template is free as long as you keep the footer author’s credit link/attribution link/backlink. If you'd like to use the template without the footer author’s credit link/attribution link/backlink, you can purchase the Credit Removal License from "https://htmlcodex.com/credit-removal". Thank you for your support. ***/-->
+							Designed By <a class="border-bottom" href="https://htmlcodex.com">HTML Codex</a>
+                        </div>
+                        
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Footer End -->
+
+
+        <!-- Back to Top -->
+        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top pt-2"><i class="bi bi-arrow-up"></i></a>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='lib/wow/wow.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/easing/easing.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/waypoints/waypoints.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/owlcarousel/owl.carousel.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/isotope/isotope.pkgd.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/lightbox/js/lightbox.min.js') }}"></script>
+
+    <!-- Template JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
+
+<script>
+ // Fetch data from server to display in the table
+ async function fetchData() {
+    try {
+        const response = await fetch('/laporan');  // Pastikan endpoint ini mengembalikan data JSON
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        // Cek jika response content-type adalah JSON
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+            const data = await response.json();
+            updateTable(data);
+        } else {
+            throw new Error("Expected JSON, but received something else.");
+        }
+    } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+    }
+}
+
+
+// Update the table with the fetched data
+function updateTable(data) {
+    const tableBody = document.getElementById('data-table');
+    tableBody.innerHTML = '';  // Clear existing table rows before adding new data
+
+    data.forEach(entry => {
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>${entry.orang}</td>
+            <td>${entry.mobil}</td>
+            <td>${entry.motor}</td>
+            <td><img src="${entry.gambar}" alt="Gambar Kerumunan" style="width: 100px; height: auto;"></td>
+            <td>${entry.waktu}</td>
+            <td>${entry.tingkat_keramaian}</td>
+        `;
+        tableBody.appendChild(newRow);
+    });
+}
+
+// Fetch data when the page loads
+document.addEventListener('DOMContentLoaded', fetchData);
+</script>
+
+<style>
+    /* Container Styling */
+    .contact-section {
+        background-color: #f8f9fa;
+        padding: 60px 0;
+    }
+    
+    /* Section Title Styling */
+    .contact-subtitle {
+        font-size: 18px;
+        font-weight: bold;
+        color: #007bff;
+        text-transform: uppercase;
+    }
+    
+    .contact-heading {
+        font-size: 36px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 30px;
+    }
+    
+    /* List Styling */
+    .contact-list {
+        padding: 0;
+        margin: 0;
+        list-style-type: none;
+    }
+    
+    .contact-item {
+        font-size: 20px;
+        margin-bottom: 25px;
+        color: #444;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: translateY(50px) scale(0.9); /* Efek awal: slide-down dan lebih kecil */
+        animation: fadeSlideScaleUp 1s ease forwards; /* Animasi */
+    }
+    
+    /* Icon Styling */
+    .contact-icon {
+        font-size: 35px;
+        color: #007bff;
+        margin-right: 15px;
+    }
+    
+    /* Link Styling */
+    .contact-item a {
+        text-decoration: none;
+        color: #007bff;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+    
+    .contact-item a:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+    
+    /* Animasi Fade-in, Slide-up, dan Scale-up */
+    @keyframes fadeSlideScaleUp {
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    
+    /* Delay untuk setiap item agar muncul bertahap */
+    .contact-item:nth-child(1) { animation-delay: 0.3s; }
+    .contact-item:nth-child(2) { animation-delay: 0.5s; }
+    .contact-item:nth-child(3) { animation-delay: 0.7s; }
+    .contact-item:nth-child(4) { animation-delay: 0.9s; }
+    .contact-item:nth-child(5) { animation-delay: 1.1s; }   
+    
+    .contact-section {
+        background-color: #f9f9f9;
+        padding: 1.5rem 1rem;
+        font-family: 'Arial', sans-serif;
+    }
+    
+    .contact-section p {
+        font-size: 1.1rem; /* Sedikit lebih besar */
+        color: #333;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    
+    .contact-section h2 {
+        font-size: 1.8rem; /* Ukuran judul lebih besar */
+        color: #0056b3;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f7f9;
+        margin: 0;
+        padding: 20px;
+    }
+    
+    .elegant-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .elegant-table thead {
+        background-color: #5c6bc0; /* Warna header */
+        color: #ffffff;
+    }
+    
+    .elegant-table th, .elegant-table td {
+        padding: 12px 15px;
+        text-align: center;
+        border: 1px solid #dddddd; /* Garis setiap sel */
+    }
+    
+    .elegant-table tbody tr {
+        background-color: #ffffff;
+        transition: background-color 0.3s;
+    }
+    
+    .elegant-table tbody tr:hover {
+        background-color: #f1f1f1; /* Warna saat hover */
+    }
+    
+    .elegant-table tbody td {
+        font-size: 14px;
+    }
+    
+
+
+/* Gaya untuk tabel responsif */
+@media (max-width: 768px) {
+    table {
+        font-size: 0.9rem; /* Ukuran font lebih kecil untuk perangkat kecil */
+    }
+}
+.logout-btn {
+    background: var(--secondary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background 0.3s;
+    margin-left: 20px;
+}
+
+.logout-btn:hover {
+    background: var(--primary);
+}
+/* Gaya untuk efek hover tabel */
+tr:hover {
+    background-color: rgba(72, 52, 212, 0.1); /* Warna hover yang serasi */
+    transition: background-color 0.3s; /* Transisi halus untuk efek hover */
+}
+
+/* Gaya untuk header tabel */
+th {
+    background-color: var(--primary); /* Warna latar belakang header */
+    color: white; /* Warna teks header */
+    font-weight: bold; /* Tebal untuk teks header */
+}
+
+/* Gaya untuk tabel responsif */
+@media (max-width: 768px) {
+    table {
+        font-size: 0.9rem; /* Ukuran font lebih kecil untuk perangkat kecil */
+    }
+}
+.logout-btn {
+    background: var(--secondary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background 0.3s;
+    margin-left: 20px;
+}
+
+.logout-btn:hover {
+    background: var(--primary);
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.pagination a {
+    padding: 10px 15px;
+    margin: 0 5px;
+    border: 1px solid #007bff;
+    color: #007bff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination a.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.pagination a:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+@media (max-width: 600px) {
+    .pagination {
+        flex-wrap: wrap;
+    }
+    .pagination a {
+        flex: 1 1 100%;
+        text-align: center;
+    }
+}
+.logout-btn {
+    background: var(--secondary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background 0.3s;
+    margin-left: 20px;
+}
+
+.logout-btn:hover {
+    background: var(--primary);
+}
+.download-icon {
+    display: inline-flex; /* Sama dengan form button */
+    align-items: center;
+    justify-content: center; /* Tambahkan untuk konsistensi */
+    text-decoration: none;
+    color: #fff;
+    background-color: #007bff; /* Warna latar belakang biru */
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+    font-size: 14px; /* Samakan ukuran teks dengan form button */
+}
+
+.download-icon:hover {
+    background-color: #0056b3; /* Warna latar belakang saat hover */
+}
+
+.download-icon i {
+    font-size: 16px; /* Sama dengan ikon di tombol form */
+    margin-right: 5px; /* Jarak antara ikon dan teks */
+}
+</style>    
