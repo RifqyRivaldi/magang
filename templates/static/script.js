@@ -1,28 +1,20 @@
-$(document).ready(function() {
-    // Fungsi untuk memperbarui dashboard dengan data dari server
-    function updateDashboard() {
-        $.ajax({
-            url: "/data", // Endpoint Flask yang mengirim data deteksi
-            method: "GET",
-            success: function(data) {
-                // Update nilai di dashboard
-                $('#orangCount').text(data.orang);
-                $('#carCount').text(data.mobil);
-                $('#motorCount').text(data.motor);
-
-                // Update waktu terbaru
-                var now = new Date();
-                var formattedTime = now.getHours().toString().padStart(2, '0') + ':' +
-                                    now.getMinutes().toString().padStart(2, '0') + ':' +
-                                    now.getSeconds().toString().padStart(2, '0');
-                $('#timestamp').text(formattedTime);
-            },
-            error: function(err) {
-                console.error("Gagal mendapatkan data", err);
+// Periksa status data setiap 3 detik
+setInterval(() => {
+    fetch('/data')
+        .then(response => response.json())
+        .then(data => {
+            // Alert jika lebih dari 2 orang
+            if (data.is_alert_orang) {
+                alert(`Keramaian terdeteksi: ${data.orang} orang!`);
             }
-        });
-    }
-
-    // Jalankan updateDashboard setiap 2 detik
-    setInterval(updateDashboard, 2000);
-});
+            // Alert jika lebih dari 2 mobil
+            if (data.is_alert_mobil) {
+                alert(`Keramaian terdeteksi: ${data.mobil} mobil!`);
+            }
+            // Alert jika lebih dari 2 motor
+            if (data.is_alert_motor) {
+                alert(`Keramaian terdeteksi: ${data.motor} motor!`);
+            }
+        })
+        .catch(error => console.error("Error fetching data:", error));
+}, 3000); // Interval 3000ms (3 detik)

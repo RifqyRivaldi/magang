@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Deteksi Kerumunan</title>
 </head>
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/static/script.js"></script>
+
 <body>
     <header class="header">
         <button class="menu-btn">☰</button>
         <h1>Sistem Deteksi Kerumunan</h1>
-        <img src="https://i.ibb.co/pxX3fB6/RIVALDI-removebg.png" alt="RIVALDI" class="gambar-kecil">
+    
         <a href="{{ url_for('logout') }}" class="btn logout-btn">Logout</a> <!-- Logout Button -->
     </header>
     
@@ -53,23 +57,23 @@
             <div class="data-container">
                 <div class="card">
                     <h3>Jumlah Orang</h3>
-                    <p id="orang_count">0</p>
+                    <p id="jumlah_orang">0</p>
                 </div>
                 <div class="card">
                     <h3>Jumlah Mobil</h3>
-                    <p id="mobil_count">0</p>
+                    <p id="jumlah_mobil">0</p>
                 </div>
                 <div class="card">
                     <h3>Jumlah Motor</h3>
-                    <p id="motor_count">0</p>
+                    <p id="jumlah_motor">0</p>
                 </div>
                 <div class="card">
                     <h3>Waktu</h3>
-                    <p id="timestamp">00:00:00</p>
+                    <p id="waktu">00:00:00</p>
                 </div>
                 <div class="card">
                     <h3>Tingkat Keramaian</h3>
-                    <p id="crown_level">normal</p>
+                    <p id="tingkat_keramaian">normal</p>
                 </div>
             </div>
         </section>
@@ -129,15 +133,24 @@
             }
         });
 
-        async function fetchData() {
-            try {
-                const response = await fetch('/data'); // Pastikan URL ini sesuai dengan endpoint yang benar
-                const data = await response.json();
-                updateDashboard(data);
-            } catch (error) {
-                console.error("Gagal mendapatkan data", error);
+        document.addEventListener("DOMContentLoaded", function() {
+            function fetchData() {
+                fetch('/data')
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('tingkat_keramaian').textContent = data.tingkat_keramaian;
+                        document.getElementById('jumlah_orang').textContent = data.orang;
+                        document.getElementById('jumlah_mobil').textContent = data.mobil;
+                        document.getElementById('jumlah_motor').textContent = data.motor;
+                        document.getElementById('waktu').textContent = new Date().toLocaleTimeString(); // Update waktu saat ini
+                    })
+                    .catch(error => console.error('Error fetching data:', error));
             }
-        }
+        
+            // Fetch data every 5 seconds
+            setInterval(fetchData, 5000);
+            fetchData(); // Initial fetch
+        });
 
         function updateDashboard(data) {
             document.getElementById('orang_count').innerText = data.orang;
@@ -153,6 +166,8 @@
         setInterval(fetchData, 1000);
     </script>
 </body>
+
+
 </html>
 <style>
     :root {

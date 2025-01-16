@@ -25,23 +25,26 @@ logging.basicConfig(level=logging.DEBUG)  # Logs all levels of messages (DEBUG, 
 
 # Load the pre-trained YOLO model
 model = YOLO('best (8).pt')
-# Model Camera Laptop
+# Model Camera Laptop   
  # IP dari aplikasi kamera HP
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
+# cap.set(cv2.CAP_PROP_FPS, 10)
+
+
 # cap = cv2.VideoCapture(0)
 # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-cap.set(cv2.CAP_PROP_FPS, 10)
+
 #  Model Camera CCTV
-# cap = cv2.VideoCapture('rtsp://admin:admin@192.168.1.11:8554/Streaming/Channels/102')
-# cap.set(cv2.CAP_PROP_FPS, 10)
+# cap = cv2.VideoCapture('rtsp://admin:admin@10.3.1.210:8554/Streaming/Channels/102')
+cap.set(cv2.CAP_PROP_FPS, 10)
 
 
 # Thresholds for crowd detection
 crowd_thresholds = {
-    "normal": 3,
-    "medium": 10,
-    "hard": 50
+    "normal": 1,
+    "medium": 2,
+    "hard": 3
 }
 last_person_count = 0
 current_counts = {"orang": 0, "mobil": 0, "motor": 0, "tingkat_keramaian": "normal"}
@@ -118,7 +121,13 @@ if __name__ == '__main__':
     
 #BACKEND
 def gen_frames_and_save_periodically():
-    global last_person_count, current_counts
+    global last_person_count, current_counts, last_save_time, frame_count
+    cap = cv2.VideoCapture(0)  # Assuming video capture device (camera)
+
+    if not cap.isOpened():
+        logging.error("Failed to open video capture.")
+        return
+
     last_save_time = time.time()  # Waktu terakhir data disimpan
     frame_count = 0  # Hitung jumlah frame
 
@@ -129,15 +138,16 @@ def gen_frames_and_save_periodically():
             break
 
         frame_count += 1
-        if frame_count % 5 != 0:  # Proses setiap 5 frame
+        if frame_count % 5 != 0:  # Process every 5 frames
             continue
 
         try:
-            # Proses YOLO (deteksi)
+            # Process YOLO (detection)
             results = model(frame)
             orang_count, mobil_count, motor_count = 0, 0, 0
-            annotated_frame = frame  # Default ke frame asli
+            annotated_frame = frame  # Default to the original frame
 
+            # Detect objects in the frame
             for result in results:
                 for detection in result.boxes.data:
                     label = result.names[int(detection[5])]
@@ -148,9 +158,9 @@ def gen_frames_and_save_periodically():
                     elif label == "MOTOR":
                         motor_count += 1
 
-                annotated_frame = result.plot()  # Frame dengan anotasi
- 
-            # Tentukan tingkat keramaian
+                annotated_frame = result.plot()  # Annotate the frame
+
+            # Determine crowd level
             crowd_level = "normal"
             if orang_count <= crowd_thresholds["normal"]:
                 crowd_level = "normal"
@@ -159,37 +169,55 @@ def gen_frames_and_save_periodically():
             else:
                 crowd_level = "hard"
 
-            current_time = get_current_time()
+            # Update current counts
             current_counts["orang"] = orang_count
             current_counts["mobil"] = mobil_count
             current_counts["motor"] = motor_count
             current_counts["tingkat_keramaian"] = crowd_level
+            current_time = get_current_time()
 
-            # Simpan data setiap 30 detik
+            # Notifications if the count exceeds threshold
+            if orang_count > 1:
+                logging.warning(f"Keramaian Terdeteksi: {orang_count} orang.")
+                cv2.putText(annotated_frame, f"Notif: {orang_count} Orang Terdeteksi!", (10, 280), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                winsound.Beep(2000, 500)
+
+            if mobil_count > 2:
+                logging.warning(f"Keramaian Terdeteksi: {mobil_count} mobil.")
+                cv2.putText(annotated_frame, f"Notif: {mobil_count} Mobil Terdeteksi!", (10, 320), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+                winsound.Beep(1500, 500)
+
+            if motor_count > 2:
+                logging.warning(f"Keramaian Terdeteksi: {motor_count} motor.")
+                cv2.putText(annotated_frame, f"Notif: {motor_count} Motor Terdeteksi!", (10, 360), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                winsound.Beep(1000, 500)
+
+            # Save data every 30 seconds
             if time.time() - last_save_time >= 30:
                 gambar = save_detected_image(annotated_frame)
                 insert_detection_data(orang_count, mobil_count, motor_count, gambar, current_time, crowd_level)
                 last_save_time = time.time()
                 logging.info(f"Data saved at {current_time}")
 
-            # Sound alert jika jumlah orang bertambah
+            # Sound alert if the person count increases
             if orang_count > last_person_count:
                 winsound.Beep(1000, 200)
 
             last_person_count = orang_count
 
-            # Tambahkan teks anotasi ke frame
+            # Annotate the frame with detected counts and time
             cv2.putText(annotated_frame, f"Jumlah Orang: {orang_count}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             cv2.putText(annotated_frame, f"Jumlah Mobil: {mobil_count}", (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             cv2.putText(annotated_frame, f"Jumlah Motor: {motor_count}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             cv2.putText(annotated_frame, f"Waktu: {current_time}", (10, 160), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
             cv2.putText(annotated_frame, f"Tingkat Keramaian: {crowd_level}", (10, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
-            if crowd_level == "hard":
-                cv2.putText(annotated_frame, "Kerumunan Terdeteksi!", (10, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-
-            # Encode frame untuk streaming
+            # Encode the frame for streaming
             ret, buffer = cv2.imencode('.jpg', annotated_frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+            if not ret:
+                logging.error("Failed to encode frame.")
+                break
+
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
@@ -197,7 +225,12 @@ def gen_frames_and_save_periodically():
         except Exception as e:
             logging.error(f"Error in video stream processing: {e}")
             break
-        
+
+    cap.release()
+
+
+# if crowd_level == "medium":
+            #     cv2.putText(annotated_frame, "Kerumunan Terdeteksi!", (10, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 def save_detected_image(frame):
     # Generate timestamp untuk nama file unik
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -477,7 +510,23 @@ def video_feed():
 
 @app.route('/data')
 def data():
-    return jsonify(current_counts)
+    # Periksa jika kondisi keramaian terpenuhi untuk masing-masing kategori
+    is_alert_orang = current_counts["orang"] > 1  # True jika lebih dari 2 orang terdeteksi
+    is_alert_mobil = current_counts["mobil"] > 2  # True jika lebih dari 2 mobil terdeteksi
+    is_alert_motor = current_counts["motor"] > 2  # True jika lebih dari 2 motor terdeteksi
+
+    # Tambahkan status alert ke data respons
+    response = {
+        "orang": current_counts["orang"],
+        "mobil": current_counts["mobil"],
+        "motor": current_counts["motor"],
+        "tingkat_keramaian": current_counts["tingkat_keramaian"],
+        "is_alert_orang": is_alert_orang,  # True jika lebih dari 2 orang
+        "is_alert_mobil": is_alert_mobil,  # True jika lebih dari 2 mobil
+        "is_alert_motor": is_alert_motor  # True jika lebih dari 2 motor
+    }
+    return jsonify(response)
+
 
 @app.route('/view_users')
 def view_users():
